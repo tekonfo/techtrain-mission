@@ -44,7 +44,7 @@ func main() {
 		if rows.Next() {
 			fmt.Fprintf(w, "この名前はすでに登録されています\n")	
 		}else {
-			result, err := db.Exec("INSERT user (name, token, gacha_times) values (?, ?, 0)", name, token)
+			_, err := db.Exec("INSERT user (name, token, gacha_times) values (?, ?, 0)", name, token)
 			if err != nil {
 				log.Fatal(err)
 			}
