@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net/http"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -21,5 +22,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(id, name)
+	http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, name)
+	})
+
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
