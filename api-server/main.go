@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -21,6 +22,11 @@ func randSeq(n int) string {
     return string(b)
 }
 
+// これKeyを小文字にすると反応しなくなる、なんで
+type CreateUser struct {
+	Token string `json:"token"`
+}
+
 func main() {
 	db, err := sql.Open("mysql", "docker:docker@tcp(db:3306)/game_db")
 	if err != nil {
@@ -28,12 +34,13 @@ func main() {
 	}
 
 	http.HandleFunc("/user/create", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
 		if r.Method != "POST" {
 			fmt.Fprintf(w, "Sorry, only Post methods are supported.")
 		}
 		
 		name := r.FormValue("name")
-		token := randSeq(32)
+		t := randSeq(32)
 		// ToDo すでに登録されている名前かどうかを判断する
 		rows, err := db.Query("SELECT name FROM user WHERE name = ?;", name)
 
@@ -44,12 +51,20 @@ func main() {
 		if rows.Next() {
 			fmt.Fprintf(w, "この名前はすでに登録されています\n")	
 		}else {
-			_, err := db.Exec("INSERT user (name, token, gacha_times) values (?, ?, 0)", name, token)
+			_, err := db.Exec("INSERT user (name, token, gacha_times) values (?, ?, 0)", name, t)
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			fmt.Fprintf(w, "Name = %s\n", name)
+			createuser := CreateUser{
+				Token: t,
+			}
+			b, err := json.Marshal(createuser)
+			if err != nil {
+				fmt.Println("error:", err)
+			}
+
+			w.Write(b)
 		}
 	})
 
