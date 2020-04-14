@@ -46,7 +46,7 @@ func main() {
 
 		xtoken, ok := r.URL.Query()["x-token"]
 		if !ok || len(xtoken[0]) < 1 {
-			log.Println("Url param 'key' is  missing")
+			log.Println("Url param 'x-token' is  missing")
 		}
 
 		token := xtoken[0]
@@ -54,9 +54,7 @@ func main() {
 		// 検索
 		row := db.QueryRow("SELECT name FROM user where token = ?;", token)
 
-		if err != nil {
-			log.Fatal(err)
-		}
+
 
 		var name string
 		err := row.Scan(&name)
@@ -74,14 +72,49 @@ func main() {
 		if err != nil {
 			fmt.Println("error:", err)
 		}
-		
+
 		w.Write(b)
+	})
+
+
+	http.HandleFunc("/user/update", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if r.Method != "PUT" {
+			fmt.Fprintf(w, "Sorry, only Put methods are supported.")
+			return
+		}
+
+		xtoken, ok := r.URL.Query()["x-token"]
+		if !ok || len(xtoken[0]) < 1 {
+			log.Println("Url param 'x-token' is  missing")
+			return
+		}
+
+		token := xtoken[0]
+		row := db.QueryRow("SELECT name FROM user WHERE token = ?;", token)
+
+		var oldName string
+		err := row.Scan(&oldName)
+
+		if err != nil {
+			fmt.Print(err)
+			fmt.Fprintf(w, "このtokenを持つユーザーは存在しません\n")
+			return
+		}
+
+		name := r.FormValue("name")
+		_, err = db.Exec("UPDATE user SET name = ? WHERE token = ?;", name, token)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 	})
 
 	http.HandleFunc("/user/create", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		if r.Method != "POST" {
 			fmt.Fprintf(w, "Sorry, only Post methods are supported.")
+			return
 		}
 		
 		name := r.FormValue("name")
