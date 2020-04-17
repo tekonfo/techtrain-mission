@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
-	"net/http"
 	"math/rand"
+	"net/http"
+	"os"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -16,11 +16,11 @@ import (
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 func randSeq(n int) string {
-    b := make([]rune, n)
-    for i := range b {
-        b[i] = letters[rand.Intn(len(letters))]
-    }
-    return string(b)
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
 }
 
 // これKeyを小文字にすると反応しなくなる、なんで
@@ -47,7 +47,7 @@ func main() {
 	defer db.Close()
 
 	// Log設定
-	f, err := os.OpenFile("logfile", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+	f, err := os.OpenFile("logfile", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
@@ -59,9 +59,8 @@ func main() {
 		putAccessLog(r.URL.Path, r.Method)
 
 		if r.Method != "GET" {
-			fmt.Fprintf(w, "Sorry, only Get methods are supported")
-			// ToDo ここのWriteHeader作用しない
 			w.WriteHeader(http.StatusMethodNotAllowed)
+			fmt.Fprintf(w, "Sorry, only Get methods are supported")
 			return
 		}
 
@@ -151,7 +150,7 @@ func main() {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
-		
+
 		name := r.FormValue("name")
 		t := randSeq(32)
 		// ToDo すでに登録されている名前かどうかを判断する
@@ -164,11 +163,11 @@ func main() {
 		}
 
 		if rows.Next() {
-			fmt.Fprintf(w, "この名前はすでに登録されています\n")	
+			fmt.Fprintf(w, "この名前はすでに登録されています\n")
 			w.WriteHeader(http.StatusForbidden)
 			return
 		}
-		
+
 		_, err = db.Exec("INSERT user (name, token, gacha_times) values (?, ?, 0)", name, t)
 		if err != nil {
 			log.Fatal(err)
@@ -183,7 +182,7 @@ func main() {
 		if err != nil {
 			fmt.Println("error:", err)
 		}
-		
+
 		w.Write(b)
 		w.WriteHeader(http.StatusOK)
 	})
