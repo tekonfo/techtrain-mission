@@ -1,3 +1,7 @@
 2020/04/15 22:59:43 This is a test log entry
 2020/04/15 23:06:52 This is a test log entry
 2020/04/15 23:07:02 path: /user, method: %!d(string=GET)
+2020/04/17 11:21:01 path: /user, method: %!d(string=GET)
+2020/04/17 11:21:20 path: /user/update, method: %!d(string=PUT)
+2020/04/17 11:21:32 path: /user/create, method: %!d(string=POST)
+2020/04/17 11:21:32 http: superfluous response.WriteHeader call from main.main.func3 (main.go:188)
