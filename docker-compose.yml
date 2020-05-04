@@ -16,7 +16,7 @@ services:
     build:
       context: ./api-server
     volumes:
-      - "./api-server:/src"
+      - "./api-server:/go/src/myself"
     container_name: api-server
     ports:
       - "8080:8080"
